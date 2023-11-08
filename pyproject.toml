@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "aiogram3-learning"
+version = "0.1.0"
+description = ""
+authors = ["Timur <supteem@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = "^3.1.1"
+pydantic-settings = "^2.0.3"
+redis = "^5.0.1"
+loguru = "^0.7.2"
+pipenv = "^2023.10.24"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

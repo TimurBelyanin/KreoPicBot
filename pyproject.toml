@@ -10,8 +10,10 @@ python = "^3.11"
 aiogram = "^3.1.1"
 pydantic-settings = "^2.0.3"
 redis = "^5.0.1"
-loguru = "^0.7.2"
 pipenv = "^2023.10.24"
+sqlalchemy = "^2.0.23"
+psycopg = "^3.1.13"
+asyncpg = "^0.29.0"
 
 
 [build-system]

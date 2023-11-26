@@ -53,11 +53,18 @@ async def back_handler_10(message: Message, state: FSMContext):
             await state.set_data(
                 {key: value for key, value in context_data.items() if key != "geo"}
             )
-            await state.set_state(FSM.geo)
-            await message.answer(
-                "Выбери ГЕО 🌎",
-                reply_markup=geo_keyboard,
-            )
+            if context_data["type"] == "Товарный 💊":
+                await state.set_state(FSM.offers)
+                await message.answer(
+                    "Выбери категорию оффера 🙇🏻‍♂️",
+                    reply_markup=offers_keyboard,
+                )
+            else:
+                await state.set_state(FSM.geo)
+                await message.answer(
+                    "Выбери ГЕО 🌎",
+                    reply_markup=geo_keyboard,
+                )
         case FSM.sizes:
             await state.set_data(
                 {key: value for key, value in context_data.items() if key != "language"}

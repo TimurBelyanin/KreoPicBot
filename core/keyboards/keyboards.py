@@ -61,14 +61,14 @@ languages_keyboard = ReplyKeyboardMarkup(
 sizes_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="5 (XS)"),
-            KeyboardButton(text="10 (S)"),  # 1$
+            KeyboardButton(text="5 (XS)"),  # 1$
+            KeyboardButton(text="10 (S)"),
             KeyboardButton(text="20 (M)"),
         ],
         [
             KeyboardButton(text="30 (L)"),
             KeyboardButton(text="50 (XL)"),
-            KeyboardButton(text="100 (MAX)"),  # 10$
+            KeyboardButton(text="100 (MAX)"),  # 20$
         ],
         [KeyboardButton(text="◀️Назад"), KeyboardButton(text="В начало🏠")],
     ],

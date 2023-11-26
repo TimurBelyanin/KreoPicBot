@@ -1,4 +1,4 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, F, Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -12,12 +12,17 @@ from core.keyboards.keyboards import (
 )
 from core.utils.FSM import FSM
 
+from core.data_base.queries_core import AsyncCore
+from core.utils.rating import calculate_rating, calculate_personal_position
+
 router = Router()
 
 
 @router.message(Command(commands=["start"]))
 async def start(message: Message, state: FSMContext):
     await state.set_state(FSM.main_menu)
+    if not await AsyncCore.does_user_exist(message.from_user.id):
+        await AsyncCore.insert_user(user_id=message.from_user.id, kreo=0)
     await message.answer(
         "Добро пожаловать в лучший генератор креативов на Нутру - <b>KreoPic Bot 🤖</b>\n\nТвой верный помощник в заливах👾",
         reply_markup=main_menu_keyboard,
@@ -61,36 +66,24 @@ async def offers(message: Message, state: FSMContext):
 )
 async def geo(message: Message, state: FSMContext):
     await state.update_data(offer=message.text)
-    await state.set_state(FSM.geo)
-    await message.answer(
-        "Выбери ГЕО 🌎",
-        reply_markup=geo_keyboard,
-    )
-
-
-# @router.message(F.text.in_(["Европа👨🏼", "Африка🧑🏿‍🦱"]), FSM.geo)
-# @logger.catch
-# async def languages(message: Message, state: FSMContext, bot: Bot):
-#     await state.update_data(hair=message.text)
-#     context_data = await state.get_data()
-#     await state.clear()
-#     sent_message = await bot.send_sticker(
-#         chat_id=message.from_user.id,
-#         sticker="CAACAgEAAxkBAAEKNcBk9GOLTc0Pbz3mSTj1cNDK6Kqm1gACLQIAAqcjIUQ9QDDJ7YO0tjAE",
-#     )
-#     await asyncio.sleep(1)
-#     await message.answer(
-#         f"Well done mate!\nHere're your parameters:\n1)food: {context_data['food']}\n"
-#         f"2)drink: {context_data['beverage']}\n"
-#         f"3)profession: {context_data['profession']}\n"
-#         f"4)hair: {context_data['hair']}",
-#         reply_markup=ReplyKeyboardRemove(),
-#     )
-#     await sent_message.delete()
+    data = await state.get_data()
+    if data["type"] == "Товарный 💊":
+        await state.set_state(FSM.languages)
+        await message.answer(
+            "Выбери язык 💆🏻‍♂️",
+            reply_markup=languages_keyboard,
+        )
+    else:
+        await state.set_state(FSM.geo)
+        await message.answer(
+            "Выбери ГЕО 🌎",
+            reply_markup=geo_keyboard,
+        )
 
 
 @router.message(
-    F.text.in_(["Европа👨🏼", "Африка🧑🏿‍🦱", "Латам👨🏽‍🦱", "Азия👨🏽‍🦲"]), FSM.geo
+    F.text.in_(["Европа👨🏼", "Африка🧑🏿‍🦱", "Латам👨🏽‍🦱", "Азия👨🏽‍🦲"]),
+    FSM.geo,
 )
 async def languages(message: Message, state: FSMContext):
     await state.update_data(geo=message.text)
@@ -114,15 +107,45 @@ async def sizes(message: Message, state: FSMContext):
     )
 
 
-@router.message(
-    F.text.in_(["5 (XS)", "10 (S)", "20 (M)", "30 (L)", "50 (XL)", "100 (MAX)"]),
-    FSM.sizes,
-)
-async def finish(message: Message, state: FSMContext):
-    await state.update_data(size=message.text)
+# @router.message(
+#     F.text.in_(["5 (XS)", "10 (S)", "20 (M)", "30 (L)", "50 (XL)", "100 (MAX)"]),
+#     FSM.sizes,
+# )
+async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
+    redis = dp.get("redis")
+    await state.update_data(size=int(message.text.split()[0]))
     context_data = await state.get_data()
     await state.clear()
     ################ Bussiness-logic
     # await message.answer(f"{context_data}", reply_markup=ReplyKeyboardRemove())
-    print(context_data)
-    await message.answer("Отсоси бля", reply_markup=ReplyKeyboardRemove())
+    # We need to update the rating, but firstly add kreo to user and purchases
+    async for i in redis.scan_iter(match="*position"):
+        await redis.delete(i)
+
+    await AsyncCore.insert_purchase(
+        message.from_user.id, context_data["size"]
+    )  ### clearly
+    await AsyncCore.update_kreo(
+        message.from_user.id, context_data["size"]
+    )  ### Udpated kreo in POSTGRES
+
+    # Update the rating
+    await redis.set(name="string", value=await calculate_rating(bot))
+
+    # And we also need to update the personal rating
+    await redis.set(
+        name=str(message.from_user.id) + "position",
+        value=await calculate_personal_position(message.from_user.id, bot),
+        ex=600,
+    )
+
+    await message.answer(
+        f"Get your fucking {context_data['size']} kreo!",
+        reply_markup=main_menu_keyboard,
+    )
+
+    await state.set_state(FSM.main_menu)
+
+
+# Все работает четко, осталось сделать так, чтобы когда происходит покупка пака, чтобы у всех кэш (position) удалялся,
+# так как он уже недействителен, так как позиция человека может поменяться из-за других

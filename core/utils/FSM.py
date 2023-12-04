@@ -8,3 +8,7 @@ class FSM(StatesGroup):
     geo = State()
     languages = State()
     sizes = State()
+    TB = State()  # Test or Buy
+    feedback = State()
+    statistics = State()
+    report = State()

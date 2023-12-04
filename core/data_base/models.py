@@ -7,6 +7,8 @@ from sqlalchemy import (
     TIMESTAMP,
     text,
     BIGINT,
+    Numeric,
+    String,
 )
 
 
@@ -25,6 +27,13 @@ purchases_table = Table(
     "purchases",
     metadata_obj,
     Column("id_user", BIGINT, ForeignKey("users.user_id")),
+    Column("id_pack", String),
+    Column("TB", String, default="Buy"),
+    Column("kreo_type", String),
+    Column("GEO", String),
+    Column("language", String),
     Column("size", Integer),
+    Column("offer", String),
+    Column("price", Numeric, comment="$"),
     Column("purchased_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
 )

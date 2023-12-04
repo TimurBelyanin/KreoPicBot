@@ -2,6 +2,9 @@ from core.data_base.models import metadata_obj, users_table, purchases_table
 from core.data_base.database import async_engine
 from sqlalchemy import Integer, and_, func, insert, select, text, update
 from sqlalchemy.sql import over
+from datetime import datetime
+import tempfile
+import pandas as pd
 
 
 class AsyncCore:
@@ -13,7 +16,6 @@ class AsyncCore:
 
     @staticmethod
     async def insert_user(user_id: int, kreo: int):
-        """Function adds a recording about user(/start)"""
         """Function insert user in database"""
         async with async_engine.connect() as conn:
             # stmt = """INSERT INTO workers (username) VALUES
@@ -25,13 +27,13 @@ class AsyncCore:
             await conn.commit()
 
     @staticmethod
-    async def insert_purchase(id_user: int, size: int):
+    async def insert_purchase(**kwargs):
         """Function inserts purchase in database"""
         async with async_engine.connect() as conn:
             # stmt = """INSERT INTO workers (username) VALUES
             #     ('Jack'),
             #     ('Michael');"""
-            data = [{"id_user": id_user, "size": size}]
+            data = [kwargs]
             stmt = insert(purchases_table).values(data)
             await conn.execute(stmt)
             await conn.commit()
@@ -77,13 +79,43 @@ class AsyncCore:
         """Function gives users for the rating"""
         async with async_engine.connect() as conn:
             query = text(
-                "SELECT * FROM (SELECT user_id, kreo, row_number() OVER (ORDER BY kreo DESC)  AS rating FROM users) news WHERE user_id=:var",
+                "SELECT * FROM (SELECT user_id, kreo, row_number() OVER (ORDER BY kreo DESC) AS rating FROM users) news WHERE user_id=:var",
             )
 
             result = await conn.execute(query, {"var": user_id})
             user = result.all()
             ##################
         return user
+
+    @staticmethod
+    async def get_report(date1: datetime, date2: datetime):
+        """Function gives report about purchases within {delta} days"""
+        async with async_engine.connect() as conn:
+            query = select(
+                func.count().label("total_count"),
+                func.sum(purchases_table.c.size).label("total_kreo"),
+                func.sum(purchases_table.c.price).label("total_income"),
+            ).where(
+                and_(
+                    purchases_table.c.purchased_at >= date1,
+                    purchases_table.c.purchased_at <= date2,
+                    purchases_table.c.TB == "Buy",
+                )
+            )  # SELECT * FROM workers
+            result = await conn.execute(query)
+            workers = result.fetchone()
+            ##################
+        return workers
+
+    @staticmethod
+    async def get_purchases():
+        """Function gives a csv-file containing purchases"""
+        async with async_engine.connect() as conn:
+            query = select(purchases_table)  # SELECT * FROM purchases
+            result = await conn.execute(query)
+            purchases = result.all()
+            ##################
+        return purchases
 
     # @staticmethod
     # async def insert_resumes():

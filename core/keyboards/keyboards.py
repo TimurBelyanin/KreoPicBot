@@ -1,9 +1,18 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+main_menu_keyboard_admin = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Сгенерировать🤖"), KeyboardButton(text="Рейтинг 💎")],
+        [KeyboardButton(text="Обратная связь✨")],
+        [KeyboardButton(text="Статистика✨")],
+    ],
+    resize_keyboard=True,
+)
 
 main_menu_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Сгенерировать🤖"), KeyboardButton(text="Рейтинг 💎")],
+        [KeyboardButton(text="Обратная связь✨")],
     ],
     resize_keyboard=True,
 )
@@ -73,4 +82,30 @@ sizes_keyboard = ReplyKeyboardMarkup(
         [KeyboardButton(text="◀️Назад"), KeyboardButton(text="В начало🏠")],
     ],
     resize_keyboard=True,
+)
+
+statistics_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Отчёт✨"), KeyboardButton(text="Файл✨")],
+        [KeyboardButton(text="◀️Назад")],
+    ],
+    resize_keyboard=True,
+)
+
+reports_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Сегодня"), KeyboardButton(text="Вчера")],
+        [KeyboardButton(text="Неделя"), KeyboardButton(text="Месяц")],
+        [KeyboardButton(text="◀️Назад")],
+    ],
+    resize_keyboard=True,
+)
+
+tb_keyboard = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton(text="Test"), KeyboardButton(text="Buy")]],
+    resize_keyboard=True,
+)
+
+feedback_keyboard = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton(text="◀️Назад")]], resize_keyboard=True
 )

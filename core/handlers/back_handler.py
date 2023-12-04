@@ -7,9 +7,12 @@ from core.keyboards.keyboards import (
     offers_keyboard,
     geo_keyboard,
     languages_keyboard,
+    main_menu_keyboard_admin,
+    statistics_keyboard,
 )
 from aiogram.fsm.context import FSMContext
 from core.filters.filter_for_back import IsNoneFilter
+from core.utils import admins
 
 
 router = Router()
@@ -27,9 +30,14 @@ async def back_handler_10(message: Message, state: FSMContext):
     match curent_state:
         case FSM.types:
             await state.set_state(FSM.main_menu)
+            keyboard = (
+                main_menu_keyboard_admin
+                if message.from_user.id in admins
+                else main_menu_keyboard
+            )
             await message.answer(
                 "Добро пожаловать в лучший генератор креативов на Нутру - <b>KreoPic Bot 🤖</b>\n\nЯ буду твоим верным помощником в заливах👾",
-                reply_markup=main_menu_keyboard,
+                reply_markup=keyboard,
             )
         case FSM.offers:
             await state.set_data(
@@ -53,7 +61,7 @@ async def back_handler_10(message: Message, state: FSMContext):
             await state.set_data(
                 {key: value for key, value in context_data.items() if key != "geo"}
             )
-            if context_data["type"] == "Товарный 💊":
+            if context_data["type"] == "Товарный":
                 await state.set_state(FSM.offers)
                 await message.answer(
                     "Выбери категорию оффера 🙇🏻‍♂️",
@@ -74,6 +82,27 @@ async def back_handler_10(message: Message, state: FSMContext):
                 "Выбери язык 💆🏻‍♂️",
                 reply_markup=languages_keyboard,
             )
+        case FSM.feedback:
+            await state.set_state(FSM.main_menu)
+            keyboard = (
+                main_menu_keyboard_admin
+                if message.from_user.id in admins
+                else main_menu_keyboard
+            )
+            await message.answer(
+                "Добро пожаловать в лучший генератор креативов на Нутру - <b>KreoPic Bot 🤖</b>\n\nЯ буду твоим верным помощником в заливах👾",
+                reply_markup=keyboard,
+            )
+        case FSM.statistics:
+            await state.set_state(FSM.main_menu)
+
+            await message.answer(
+                "Добро пожаловать в лучший генератор креативов на Нутру - <b>KreoPic Bot 🤖</b>\n\nЯ буду твоим верным помощником в заливах👾",
+                reply_markup=main_menu_keyboard_admin,
+            )
+        case FSM.report:
+            await state.set_state(FSM.statistics)
+            await message.answer("Выбери опцию", reply_markup=statistics_keyboard)
 
 
 @router.message(F.text == "В начало🏠", IsNoneFilter())
@@ -81,7 +110,12 @@ async def home_handler_10(message: Message, state: FSMContext):
     """В данном хендлере необходимо реализовать кнопку 'Домой'"""
     await state.clear()
     await state.set_state(FSM.main_menu)
+    keyboard = (
+        main_menu_keyboard_admin
+        if message.from_user.id in admins
+        else main_menu_keyboard
+    )
     await message.answer(
         "Добро пожаловать в лучший генератор креативов на Нутру - KreoPic Bot 🤖\n\nЯ буду твоим верным помощником в заливах👾",
-        reply_markup=main_menu_keyboard,
+        reply_markup=keyboard,
     )

@@ -5,6 +5,8 @@ from aiogram import Bot, Dispatcher, F
 from config import settings
 from core.handlers.back_handler import router as back_router
 from core.handlers.start import router as start_router, finish
+from core.handlers.admin_handler import router as admin_router
+from core.handlers.feedback_handler import router as feedback_router
 import logging
 from logging.handlers import RotatingFileHandler
 from redis import asyncio as aioredis
@@ -48,7 +50,7 @@ async def main():
         FSM.sizes,
     )
 
-    dp.include_routers(start_router, back_router)
+    dp.include_routers(admin_router, start_router, back_router, feedback_router)
     # dp.message.
     try:
         await bot.delete_webhook(drop_pending_updates=False)

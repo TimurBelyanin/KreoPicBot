@@ -25,9 +25,7 @@ import os
 router = Router()
 
 
-@router.message(
-    F.from_user.id.in_({*admins}), F.text == "Сгенерировать🤖", FSM.main_menu
-)
+@router.message(F.from_user.id.in_({*admins}), F.text == "Сгенерировать🤖")
 async def test_or_buy(message: Message, state: FSMContext):
     await state.set_state(FSM.TB)
     await message.answer("Выбери характер операции", reply_markup=tb_keyboard)
@@ -43,7 +41,7 @@ async def just_forward(message: Message, state: FSMContext):
     )
 
 
-@router.message(F.from_user.id.in_({*admins}), F.text == "Статистика✨", FSM.main_menu)
+@router.message(F.from_user.id.in_({*admins}), F.text == "Статистика✨", IsNoneFilter())
 async def statistics(message: Message, state: FSMContext):
     """Function returns statistics about bot to admin"""
     await state.set_state(FSM.statistics)
@@ -53,10 +51,10 @@ async def statistics(message: Message, state: FSMContext):
 @router.message(F.text == "Файл✨", FSM.statistics)
 async def get_file(message: Message, state: FSMContext):
     """Function returns file which contains all the recordings about purchases"""
-    await state.set_state(FSM.main_menu)
+    await state.clear()
     temp_file = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
     purchases = await AsyncCore.get_purchases()
-    df = pd.DataFrame(purchases)
+    df = pd.DataFrame(purchases)[::-1]
     df.to_csv(temp_file.name)
     await message.bot.send_document(
         chat_id=message.chat.id,
@@ -104,4 +102,4 @@ async def users_options(message: Message, state: FSMContext):
         f"✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨За данный период сгенерировано:\nПаков: {packs}\nKreo: {kreo or 0}\nДоход: {int(money or 0)}$✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨",
         reply_markup=main_menu_keyboard_admin,
     )
-    await state.set_state(FSM.main_menu)
+    await state.clear()

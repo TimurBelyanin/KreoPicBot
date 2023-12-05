@@ -3,6 +3,7 @@ from typing import List
 
 from aiogram import Bot, Dispatcher, F
 from config import settings
+from core.filters.filter_for_back import IsNoneFilter
 from core.handlers.back_handler import router as back_router
 from core.handlers.start import router as start_router, finish
 from core.handlers.admin_handler import router as admin_router
@@ -18,6 +19,7 @@ from core.utils.FSM import FSM
 from core.utils.rating import rating
 from core.filters.dp_filter import DpFilter  ###########
 from core.handlers.start import finish
+from core.handlers.feedback_handler import handler_text, handler_photo
 import datetime
 
 
@@ -31,6 +33,7 @@ async def main():
     # await create_database()
 
     redis_connection = aioredis.client.Redis(decode_responses=True)
+    # redis_connection.ttl()
 
     # await redis_connection.set(name="kek", value=23, ex=10)
     # redis_connection = redis.StrictRedis(
@@ -42,13 +45,19 @@ async def main():
     dp["redis"] = redis_connection
 
     # dp.shutdown.register(on_shutdown)
-    dp.message.register(rating, DpFilter(dp), F.text == "Рейтинг 💎", FSM.main_menu)
+    dp.message.register(
+        rating, DpFilter(dp), F.text == "Рейтинг 💎", IsNoneFilter()
+    )  # Add a filter to ensure that the user not in any other FSMstate
     dp.message.register(
         finish,
         DpFilter(dp),
         F.text.in_(["5 (XS)", "10 (S)", "20 (M)", "30 (L)", "50 (XL)", "100 (MAX)"]),
         FSM.sizes,
     )
+    dp.message.register(
+        handler_text, DpFilter(dp), F.text, ~(F.text == "◀️Назад"), FSM.feedback
+    )
+    dp.message.register(handler_photo, DpFilter(dp), F.photo, FSM.feedback)
 
     dp.include_routers(admin_router, start_router, back_router, feedback_router)
     # dp.message.
@@ -87,4 +96,5 @@ if __name__ == "__main__":
 # Судя по всему, оплата будет через робокассу
 # Кэширование через Redis пока делать не буду, огромного потока народу в один момент времени быть не должно
 # Сделал кэширование для рейтинга. Нужно обработать команду покупки
-# Сейчас накидываю мидлварь на команду start чтобы пропускала только тех, кто в белом списке
+
+# избавиться от main_menu чтобы не заполянть место в Redis. Пользователь для работы с ботом все равно нажмет "Запустить", и все будет хорошо

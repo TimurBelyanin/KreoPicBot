@@ -28,7 +28,7 @@ router = Router()
 
 @router.message(Command(commands=["start"]), flags={"chat_action": "typing"})
 async def start(message: Message, state: FSMContext):
-    await state.set_state(FSM.main_menu)
+    # await state.set_state(FSM.main_menu)
     keyboard = (
         main_menu_keyboard_admin
         if message.from_user.id in admins
@@ -36,6 +36,10 @@ async def start(message: Message, state: FSMContext):
     )
     if not await AsyncCore.does_user_exist(message.from_user.id):
         await AsyncCore.insert_user(user_id=message.from_user.id, kreo=0)
+    await message.bot.send_sticker(
+        chat_id=message.chat.id,
+        sticker="CAACAgEAAxkBAAEK5lFlbsWCRL7ktTJZWw93x2hlgVguEAACMQIAAsOjKEdLBVdiYsQQXzME",
+    )
     await message.answer(
         "Добро пожаловать в лучший генератор креативов на Нутру - <b>KreoPic Bot 🤖</b>\n\nТвой верный помощник в заливах👾",
         reply_markup=keyboard,
@@ -60,7 +64,7 @@ async def start(message: Message, state: FSMContext):
 
 
 ########################################################################################################################
-@router.message(F.text == "Сгенерировать🤖", FSM.main_menu)
+@router.message(F.text == "Сгенерировать🤖")
 async def types(message: Message, state: FSMContext):
     await state.set_state(FSM.types)
     await message.answer(
@@ -180,7 +184,7 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
         else main_menu_keyboard,
     )
 
-    await state.set_state(FSM.main_menu)
+    # await state.set_state(FSM.main_menu)
 
 
 # Все работает четко, осталось сделать так, чтобы когда происходит покупка пака, чтобы у всех кэш (position) удалялся,

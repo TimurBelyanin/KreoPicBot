@@ -21,6 +21,9 @@ from core.utils import admins, get_id_pack
 import tempfile
 import pandas as pd
 import os
+import core.kreo_generation.algo_functions as generation
+from aiogram.utils.chat_action import ChatActionSender
+from aiogram.enums.chat_action import ChatAction
 
 
 router = Router()
@@ -129,11 +132,13 @@ async def languages(message: Message, state: FSMContext):
 
 
 @router.message(
-    F.text.in_(["RU🇷🇺", "ES🇪🇸", "EN🇬🇧", "IT🇮🇹", "BG🇧🇬", "RO🇷🇴", "CZ🇨🇿", "FR🇫🇷"]),
+    F.text.in_(
+        ["RU🇷🇺", "ES🇪🇸", "EN🇬🇧", "IT🇮🇹", "BG🇧🇬", "RO🇷🇴", "CZ🇨🇿", "FR🇫🇷", "UA🇺🇦"]
+    ),
     FSM.languages,
 )
 async def sizes(message: Message, state: FSMContext):
-    await state.update_data(language=message.text.rstrip("🇷🇺🇪🇸🇬🇧🇮🇹🇧🇬🇷🇴🇨🇿🇫🇷"))
+    await state.update_data(language=message.text.rstrip("🇷🇺🇪🇸🇬🇧🇮🇹🇧🇬🇷🇴🇨🇿🇫🇷🇺🇦"))
     await state.set_state(FSM.sizes)
     await message.answer(
         "Выбери размер пака 💁🏻‍♂️",
@@ -142,6 +147,11 @@ async def sizes(message: Message, state: FSMContext):
 
 
 async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
+    sent_message = await message.bot.send_sticker(
+        message.chat.id,
+        sticker="CAACAgEAAxkBAAEK7qlldKphbn0omBlbzZacAeO572JqAAOAAgACoWMZRKtYP6IFwk3cMwQ",
+    )
+    id_pack = get_id_pack()
     redis = dp.get("redis")
     await state.update_data(size=int(message.text.split()[0]))
     context_data = await state.get_data()
@@ -154,7 +164,7 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
 
     await AsyncCore.insert_purchase(
         id_user=message.from_user.id,
-        id_pack=get_id_pack(),
+        id_pack=id_pack,
         TB=context_data.get("TB", "Buy"),
         kreo_type=context_data["type"],
         GEO=context_data.get("geo"),
@@ -177,13 +187,26 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
         ex=600,
     )
 
-    await message.answer(
-        f"Get your fucking {context_data['size']} kreo!",
-        reply_markup=main_menu_keyboard_admin
-        if message.from_user.id in admins
-        else main_menu_keyboard,
+    # await message.answer(
+    #     f"Get your fucking {context_data['size']} kreo!",
+    #     reply_markup=main_menu_keyboard_admin
+    #     if message.from_user.id in admins
+    #     else main_menu_keyboard,
+    # )
+    # await message.answer(f"{context_data}")
+    #
+    # Sending the archive
+    archive = generation.zip_archive(data=context_data, id_pack=id_pack)
+    await message.bot.send_document(
+        chat_id=message.chat.id,
+        caption="✨✨✨Get your fucking pack bitch!✨✨✨",
+        document=FSInputFile(path=archive, filename=archive),
     )
-
+    await message.bot.delete_message(
+        chat_id=message.chat.id, message_id=sent_message.message_id
+    )
+    if os.path.exists(archive):
+        os.remove(archive)
     # await state.set_state(FSM.main_menu)
 
 

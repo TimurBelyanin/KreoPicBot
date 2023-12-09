@@ -66,7 +66,7 @@ async def handler_photo(message: Message, state: FSMContext, dp: Dispatcher):
 
     if await timer_feedback_check(message, dp):
         await message.answer(
-            f"жди еще {await left_time(message, dp)} минут прежде чем написать",
+            f"Слудующее обращение можно отправить через {await left_time(message, dp)} мин.✨",
             reply_markup=main_menu_keyboard,
         )
         await state.clear()
@@ -88,7 +88,7 @@ async def handler_photo(message: Message, state: FSMContext, dp: Dispatcher):
 async def handler_text(message: Message, state: FSMContext, dp: Dispatcher):
     if await timer_feedback_check(message, dp):
         await message.answer(
-            f"жди еще {await left_time(message, dp)} минут прежде чем написать",
+            f"Слудующее обращение можно отправить через {await left_time(message, dp)} мин.✨",
             reply_markup=main_menu_keyboard,
         )
         await state.clear()

@@ -51,7 +51,16 @@ async def main():
     dp.message.register(
         finish,
         DpFilter(dp),
-        F.text.in_(["5 (XS)", "10 (S)", "20 (M)", "30 (L)", "50 (XL)", "100 (MAX)"]),
+        F.text.in_(
+            [
+                "5 | XS | 1$",
+                "10 | S | 2$",
+                "20 | M | 4$",
+                "30 | L | 6$",
+                "50 | XL | 10$",
+                "100 | XXL | 20$",
+            ]
+        ),
         FSM.sizes,
     )
     dp.message.register(

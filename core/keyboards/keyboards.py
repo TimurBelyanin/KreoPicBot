@@ -27,10 +27,13 @@ types_keyboard = ReplyKeyboardMarkup(
 
 offers_keyboard = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Похудение🍏"), KeyboardButton(text="Паразиты🦠")],
-        [KeyboardButton(text="Гипертония🫀"), KeyboardButton(text="Диабет👅")],
-        [KeyboardButton(text="Простатит🥚"), KeyboardButton(text="Потенция🍌")],
-        [KeyboardButton(text="Суставы🦵🏻"), KeyboardButton(text="Омоложение👶🏻")],
+        [
+            KeyboardButton(text="Похудение🍏"),
+            KeyboardButton(text="Суставы🦵🏻"),
+        ],
+        [KeyboardButton(text="Диабет👅"), KeyboardButton(text="Гипертония🫀")],
+        [KeyboardButton(text="Потенция🍌"), KeyboardButton(text="Простатит🥚")],
+        [KeyboardButton(text="Паразиты🦠"), KeyboardButton(text="Омоложение👶🏻")],
         [KeyboardButton(text="◀️Назад"), KeyboardButton(text="В начало🏠")],
     ],
     resize_keyboard=True,
@@ -53,13 +56,15 @@ languages_keyboard = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="RU🇷🇺"),
             KeyboardButton(text="EN🇬🇧"),
-            KeyboardButton(text="ES🇪🇸"),
+            # KeyboardButton(text="ES🇪🇸"),
             KeyboardButton(text="IT🇮🇹"),
         ],
         [
-            KeyboardButton(text="BG🇧🇬"),
-            KeyboardButton(text="RO🇷🇴"),
-            KeyboardButton(text="CZ🇨🇿"),
+            KeyboardButton(text="UA🇺🇦"),
+            KeyboardButton(text="ES🇪🇸"),
+            # KeyboardButton(text="BG🇧🇬"),
+            # KeyboardButton(text="RO🇷🇴"),
+            # KeyboardButton(text="CZ🇨🇿"),
             KeyboardButton(text="FR🇫🇷"),
         ],
         [KeyboardButton(text="◀️Назад"), KeyboardButton(text="В начало🏠")],
@@ -70,14 +75,14 @@ languages_keyboard = ReplyKeyboardMarkup(
 sizes_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="5 (XS)"),  # 1$
-            KeyboardButton(text="10 (S)"),
-            KeyboardButton(text="20 (M)"),
+            KeyboardButton(text="5 | XS | 1$"),  # 1$
+            KeyboardButton(text="10 | S | 2$"),
+            KeyboardButton(text="20 | M | 4$"),
         ],
         [
-            KeyboardButton(text="30 (L)"),
-            KeyboardButton(text="50 (XL)"),
-            KeyboardButton(text="100 (MAX)"),  # 20$
+            KeyboardButton(text="30 | L | 6$"),
+            KeyboardButton(text="50 | XL | 10$"),
+            KeyboardButton(text="100 | XXL | 20$"),  # 20$
         ],
         [KeyboardButton(text="◀️Назад"), KeyboardButton(text="В начало🏠")],
     ],

@@ -24,6 +24,8 @@ import os
 import core.kreo_generation.algo_functions as generation
 from aiogram.utils.chat_action import ChatActionSender
 from aiogram.enums.chat_action import ChatAction
+from time import monotonic
+from core.utils import proportions
 
 
 router = Router()
@@ -147,6 +149,7 @@ async def sizes(message: Message, state: FSMContext):
 
 
 async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
+    a = monotonic()
     sent_message = await message.bot.send_sticker(
         message.chat.id,
         sticker="CAACAgEAAxkBAAEK7qlldKphbn0omBlbzZacAeO572JqAAOAAgACoWMZRKtYP6IFwk3cMwQ",
@@ -187,27 +190,32 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
         ex=600,
     )
 
-    # await message.answer(
-    #     f"Get your fucking {context_data['size']} kreo!",
-    #     reply_markup=main_menu_keyboard_admin
-    #     if message.from_user.id in admins
-    #     else main_menu_keyboard,
-    # )
-    # await message.answer(f"{context_data}")
-    #
     # Sending the archive
-    archive = generation.zip_archive(data=context_data, id_pack=id_pack)
-    await message.bot.send_document(
-        chat_id=message.chat.id,
-        caption="✨✨✨Get your fucking pack bitch!✨✨✨",
-        document=FSInputFile(path=archive, filename=archive),
-    )
-    await message.bot.delete_message(
-        chat_id=message.chat.id, message_id=sent_message.message_id
-    )
-    if os.path.exists(archive):
-        os.remove(archive)
-    # await state.set_state(FSM.main_menu)
+    archive_name = f"{proportions[context_data['size']]}-Pack KreoPic [{id_pack}].zip"
+    try:
+        archive = generation.zip_function(data=context_data, archive_name=archive_name)
+        await message.bot.send_document(
+            chat_id=message.chat.id,
+            caption=f"✨✨✨Ваш пак готов✨✨✨\n(Время загрузки файла: {(monotonic() - a):.2f} сек.)",
+            document=FSInputFile(path=archive, filename=archive),
+            reply_markup=main_menu_keyboard_admin
+            if message.from_user.id in admins
+            else main_menu_keyboard,
+        )
+    except Exception as error:
+        await message.answer(
+            f"Ошибка: пока работает только похудение в классическом!",
+            reply_markup=main_menu_keyboard_admin
+            if message.from_user.id in admins
+            else main_menu_keyboard,
+        )
+        print(error)
+    finally:
+        await message.bot.delete_message(
+            chat_id=message.chat.id, message_id=sent_message.message_id
+        )
+        if os.path.exists(archive_name):
+            os.remove(archive_name)
 
 
 # Все работает четко, осталось сделать так, чтобы когда происходит покупка пака, чтобы у всех кэш (position) удалялся,

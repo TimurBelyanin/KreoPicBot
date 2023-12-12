@@ -20,6 +20,7 @@ from core.utils.rating import rating
 from core.filters.dp_filter import DpFilter  ###########
 from core.handlers.start import finish
 from core.handlers.feedback_handler import handler_text, handler_photo
+from core.middlewares.throttling_middleware import ThrottlingMiddleware
 import datetime
 
 
@@ -45,6 +46,7 @@ async def main():
     dp["redis"] = redis_connection
 
     # dp.shutdown.register(on_shutdown)
+    dp.message.middleware(ThrottlingMiddleware())
     dp.message.register(
         rating, DpFilter(dp), F.text == "Рейтинг 💎", IsNoneFilter()
     )  # Add a filter to ensure that the user not in any other FSMstate
@@ -53,12 +55,10 @@ async def main():
         DpFilter(dp),
         F.text.in_(
             [
-                "5 | XS | 1$",
-                "10 | S | 2$",
-                "20 | M | 4$",
-                "30 | L | 6$",
-                "50 | XL | 10$",
-                "100 | XXL | 20$",
+                "5 | S | 1$",
+                "10 | M | 2$",
+                "20 | L | 4$",
+                "30 | XL | 6$",
             ]
         ),
         FSM.sizes,

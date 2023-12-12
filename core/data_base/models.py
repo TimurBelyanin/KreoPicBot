@@ -19,7 +19,9 @@ users_table = Table(
     "users",
     metadata_obj,
     Column("user_id", BIGINT, primary_key=True),
-    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
+    Column(
+        "created_at", TIMESTAMP, server_default=text("TIMEZONE('Europe/Moscow', now())")
+    ),
     Column("kreo", Integer),
 )
 
@@ -35,5 +37,9 @@ purchases_table = Table(
     Column("size", Integer),
     Column("offer", String),
     Column("price", Numeric, comment="$"),
-    Column("purchased_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
+    Column(
+        "purchased_at",
+        TIMESTAMP,
+        server_default=text("TIMEZONE('Europe/Moscow', now())"),
+    ),
 )

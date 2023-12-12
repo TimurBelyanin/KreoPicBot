@@ -25,13 +25,17 @@ import core.kreo_generation.algo_functions as generation
 from aiogram.utils.chat_action import ChatActionSender
 from aiogram.enums.chat_action import ChatAction
 from time import monotonic
-from core.utils import proportions
+from core.utils import proportions, white_list
+from core.utils.rating import username_func
 
 
 router = Router()
 
 
-@router.message(Command(commands=["start"]), flags={"chat_action": "typing"})
+@router.message(
+    F.from_user.id.in_({*white_list}),
+    Command(commands=["start"]),
+)
 async def start(message: Message, state: FSMContext):
     # await state.set_state(FSM.main_menu)
     keyboard = (
@@ -153,6 +157,7 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
     sent_message = await message.bot.send_sticker(
         message.chat.id,
         sticker="CAACAgEAAxkBAAEK7qlldKphbn0omBlbzZacAeO572JqAAOAAgACoWMZRKtYP6IFwk3cMwQ",
+        reply_markup=ReplyKeyboardRemove(),
     )
     id_pack = get_id_pack()
     redis = dp.get("redis")
@@ -193,16 +198,38 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
     # Sending the archive
     archive_name = f"{proportions[context_data['size']]}-Pack KreoPic [{id_pack}].zip"
     try:
+        a = monotonic()
         archive = generation.zip_function(data=context_data, archive_name=archive_name)
+        b = monotonic() - a
         await message.bot.send_document(
             chat_id=message.chat.id,
-            caption=f"✨✨✨Ваш пак готов✨✨✨\n(Время загрузки файла: {(monotonic() - a):.2f} сек.)",
+            caption=f"<b>Ваш пак готов✨</b>\n\n"
+            + f"✨{context_data['type']}\n✨{context_data['offer']}"
+            + (f"\n✨{context_data.get('geo')}" if context_data.get("geo") else "")
+            + f"\n✨{context_data['language']}\n✨{proportions[context_data['size']]}-Pack ({context_data['size']} kreo)\n\n<b>Твой KreoPicBot ✨</b>",
             document=FSInputFile(path=archive, filename=archive),
             reply_markup=main_menu_keyboard_admin
             if message.from_user.id in admins
             else main_menu_keyboard,
         )
+        await message.bot.delete_message(
+            chat_id=message.chat.id, message_id=sent_message.message_id
+        )
+        # await message.answer(
+        #     f"<b>Выбранные настройки:</b>\n✨{context_data['type']}\n✨{context_data['offer']}"
+        #     + (f"\n✨{context_data.get('geo')}" if context_data.get("geo") else "")
+        #     + f"\n✨{context_data['language']}\n✨{proportions[context_data['size']]}-Pack ({context_data['size']} kreo)\n\n<b>Твой KreoPicBot ✨</b>"
+        # )
+
+        await message.bot.send_document(
+            chat_id=-4009443021,
+            caption=f"@{await username_func(message.from_user.id, message.bot)}\nВремя генерации: {b:.2f} сек.",
+            document=FSInputFile(path=archive, filename=archive),
+        )
     except Exception as error:
+        await message.bot.delete_message(
+            chat_id=message.chat.id, message_id=sent_message.message_id
+        )
         await message.answer(
             f"Ошибка: пока работает только похудение в классическом!",
             reply_markup=main_menu_keyboard_admin
@@ -211,9 +238,9 @@ async def finish(message: Message, state: FSMContext, dp: Dispatcher, bot: Bot):
         )
         print(error)
     finally:
-        await message.bot.delete_message(
-            chat_id=message.chat.id, message_id=sent_message.message_id
-        )
+        # await message.bot.delete_message(
+        #     chat_id=message.chat.id, message_id=sent_message.message_id
+        # )
         if os.path.exists(archive_name):
             os.remove(archive_name)
 

@@ -79,23 +79,28 @@ async def report(message: Message, state: FSMContext):
 @router.message(F.text.in_(["Сегодня", "Вчера", "Неделя", "Месяц"]), FSM.report)
 async def users_options(message: Message, state: FSMContext):
     """Function which returns results of different sql-queries depending on the option"""
+
+    def moscow_now():
+        utc_now = datetime.utcnow() + timedelta(hours=3)
+        return utc_now
+
     date1, date2 = None, None
     match message.text:
         case "Сегодня":
             date1, date2 = (
-                datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0),
-                datetime.utcnow(),
+                moscow_now().replace(hour=0, minute=0, second=0, microsecond=0),
+                moscow_now(),
             )
         case "Вчера":
-            date1, date2 = datetime.utcnow().replace(
+            date1, date2 = moscow_now().replace(
                 hour=0, minute=0, second=0, microsecond=0
-            ) - timedelta(days=1), datetime.utcnow().replace(
+            ) - timedelta(days=1), moscow_now().replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
         case "Неделя":
-            date1, date2 = datetime.utcnow() - timedelta(days=7), datetime.utcnow()
+            date1, date2 = moscow_now() - timedelta(days=7), moscow_now()
         case "Месяц":
-            date1, date2 = datetime.utcnow() - timedelta(days=30), datetime.utcnow()
+            date1, date2 = moscow_now() - timedelta(days=30), moscow_now()
 
     packs, kreo, money = await AsyncCore.get_report(date1=date1, date2=date2)
     await message.answer(

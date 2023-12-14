@@ -1,4 +1,4 @@
-from aiogram import Router, F, Bot, Dispatcher
+from aiogram import Router, F, Bot, Dispatcher, flags
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -46,13 +46,20 @@ async def feedback(message: Message, state: FSMContext):
     )
 
 
-# Global variable :|
-tasks_dict = {}
+# Global variable :| Can't we just save all this data in Redis?
+# The format of the key that stores 1.5 time is "*photo"
+# TTLCache? From middleware? From Dispatcher?
+# tasks_dict = {}
 
 
 # Хендлер для обработки фотографий
+@flags.bebra
 async def handler_photo(message: Message, state: FSMContext, dp: Dispatcher):
+    tasks_dict = dp.get("tasks_dict")
+    # a.update({3: 53})
+
     async def send_thanks(user_id):
+        """Функция засыпает, а как время выйдет что-то пишет. И при каждом приходе сообщения мы ее снова запускаем"""
         # Ожидание перед отправкой сообщения
         await asyncio.sleep(1.5)
         await message.bot.send_sticker(
@@ -111,3 +118,6 @@ async def handler_text(message: Message, state: FSMContext, dp: Dispatcher):
 @router.message(FSM.feedback)
 async def others(message: Message):
     await message.answer("‼️Пожалуйста, отправляйте только текст и изображения‼️")
+
+
+## Убрать глобальную переменную!! Работает некорректно

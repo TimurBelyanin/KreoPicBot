@@ -34,7 +34,7 @@ async def main():
     # await create_database()
 
     redis_connection = aioredis.client.Redis(decode_responses=True)
-    # redis_connection.ttl()
+    # redis_connection.pubsub()
 
     # await redis_connection.set(name="kek", value=23, ex=10)
     # redis_connection = redis.StrictRedis(
@@ -44,6 +44,7 @@ async def main():
     storage = RedisStorage(redis=redis_connection)
     dp = Dispatcher(storage=storage)
     dp["redis"] = redis_connection
+    dp["tasks_dict"] = {}
 
     # dp.shutdown.register(on_shutdown)
     dp.message.middleware(ThrottlingMiddleware())
